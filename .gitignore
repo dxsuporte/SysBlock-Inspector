@@ -1,0 +1,37 @@
+# ==============================================================================
+# SYSBLOCK-INSPECTOR: Universal GitHub Gitignore Configuration
+# Prevents binary bloat, system noises, and compilation caches from leaking.
+# ==============================================================================
+
+# --- PYINSTALLER COMPILATION OUTPUTS ---
+# ATENÇÃO: A pasta dist/ foi removida daqui para que o executável suba para o GitHub!
+build/
+*.spec
+
+# --- NATIVE LINUX PACKAGING OUTPUTS ---
+# Impede que os instaladores .deb e .rpm locais sejam enviados para o GitHub
+*.deb
+*.rpm
+
+# --- PYTHON CORE RUNTIME CACHES ---
+# Remove os arquivos de cache de bytecode que o Python cria e que dão erro de permissão
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- OPERATIONAL SYSTEM DESKTOP NOISES ---
+# Ignora arquivos de miniaturas e lixos ocultos criados pelo Linux Mint / Cinnamon
+.directory
+.Trash-*
+.DS_Store
+
+# --- VIRTUAL ENVIRONMENTS ---
+.venv/
+venv/
+ENV/
+env/
+
+# --- LOCAL EXPERIMENTAL BACKUPS ---
+*.bak
+*.tmp
+*~
