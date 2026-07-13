@@ -9,9 +9,11 @@ build/
 *.spec
 
 # --- NATIVE LINUX PACKAGING OUTPUTS ---
-# Impede que os instaladores .deb e .rpm locais sejam enviados para o GitHub
+# Impede que os instaladores locais sejam enviados, EXCETO os oficiais da pasta dist/
 *.deb
 *.rpm
+!dist/*.deb
+!dist/*.rpm
 
 # --- PYTHON CORE RUNTIME CACHES ---
 # Remove os arquivos de cache de bytecode que o Python cria e que dão erro de permissão
