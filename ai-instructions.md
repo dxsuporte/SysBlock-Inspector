@@ -6,6 +6,35 @@ To prevent graphical glitches, concurrency deadlocks, and compatibility regressi
 
 ---
 
+## 📂 Project Directory Structure
+
+Any assistant modifying the code must respect and maintain this exact lightweight architectural layout:
+
+```text
+SysBlock-Inspector/
+├── ai-instructions.md        (This file - Permanent AI constraints and guidelines)
+├── build.sh                  (Automated master PyInstaller execution compiler tool)
+├── core.py                   (Decoupled hardware querying logic and lspci JSON crawlers)
+├── create_deb.sh             (Native Debian/Mint dpkg packaging automation script)
+├── create_rpm.sh             (Native Fedora Workstation rpmbuild packaging automation script)
+├── icon.png                  (Official application commercial logo image asset)
+├── main.py                   (Polkit elevation engine wrapper and critical validation triggers)
+├── README.md                 (Official bilingual English/Portuguese user documentation manual)
+└── gui/                      (Centralized Tkinter visual components layout modules)
+    ├── __init__.py           (Package initialization definitions metadata)
+    ├── app.py                (Application orchestrator, dynamic main loops, and theme controllers)
+    ├── base_tab.py           (Abstract core frame with grid alignment row generation methods)
+    ├── tab_cpu.py            (Aba 2: Dynamic multi-thread core clock tracker monitor)
+    ├── tab_gpu.py            (Aba 5: Hardware-level visual silicon graphics extractor)
+    ├── tab_motherboard.py    (Aba 3: BIOS traces, integrated audio codecs, and electrical PCI linkages)
+    ├── tab_network.py        (Aba 6: Real physical layers chip metrics and live bandwidth counters)
+    ├── tab_ram.py            (Aba 4: Scans physical traces to count slots and JEDEC manufacturer specs)
+    ├── tab_storage.py        (Aba 7: JSON block device trees and fragmented SMART health audit)
+    └── tab_system.py         (Aba 1: System overview, Neofetch specs, and active Display Server X11/Wayland triggers)
+```
+
+---
+
 ## 🏗️ 1. Architecture Constraints (Read-Only Blueprint)
 
 - **Decoupled Architecture**: Keep the codebase split strictly into `core.py` (hardware querying logic via native POSIX files like `/sys/` and `/proc/`) and the `gui/` package (Tkinter visualization layout layers). Never mix telemetry polling inside GUI code.
