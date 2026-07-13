@@ -28,47 +28,48 @@ O sistema realiza uma varredura cega por barramentos e arquivos de paginação d
 - **Ambiente de Testes de Laboratório**: Homologado e testado exaustivamente no **Linux Mint**, com testes práticos do compilador e instalador gerados nativamente para pacotes **Debian (.deb)**.
 - **Compatibilidade Universal Estendida**: Embora os scripts de empacotamento automatizados tenham sido testados na base Debian, a engenharia do software foi inteiramente pensada, estruturada e planejada para rodar de forma universal no **Fedora (.rpm)**, Ubuntu, Arch Linux, RedHat e qualquer outra distribuição Linux moderna de 64 bits.
 
-### Recomendações de Kernel
+### Recomendações de Kernel e Dependências Base
 
-Para garantir a leitura nativa dos controladores de armazenamento modernos, chips de Wi-Fi 6E/7 e clocks de processadores de última geração, recomenda-se:
+Para garantir a leitura nativa dos controladores de armazenamento modernos, chips de Wi-Fi 6E/7 e clocks de processadores de última geração, o ecossistema utiliza utilitários padrão de mercado. O programa possui **tratamento nativo de erros**, avisando amigavelmente na inicialização caso falte algum dos pacotes abaixo, permitindo que a CPU e a RAM continuem sendo monitoradas normalmente:
 
 - **Versão de Kernel Recomendada**: Linux Kernel **5.15 ou superior** (com suporte ideal para as séries de Kernel modernas de longo suporte 6.x).
+- **Leitura de Discos (SMART)**: Requer os pacotes `smartmontools` e `nvme-cli`.
+- **Mapeamento de Chips (Barramentos PCI)**: Requer o pacote `pciutils` (comando `lspci`).
 
 ---
 
-## 📦 Como Compilar e Gerar os Instaladores Prontos
+## 🚀 Como Executar, Compilar e Gerar os Instaladores
 
-O repositório disponibiliza scripts automatizados em Bash que fazem a limpeza administrativa de caches, invocam o PyInstaller e geram os pacotes comerciais finais **direto dentro da pasta `dist/`**, sem a necessidade de ferramentas de terceiros.
+### Como Usar (Após a Instalação)
 
-### 1. Dar permissão aos scripts de automação (Apenas na primeira vez)
+Uma vez instalado através do pacote `.deb` ou `.rpm`, o programa se integra nativamente ao ecossistema de segurança do Linux. Você pode abri-lo de duas formas:
 
-```bash
-chmod +x *.sh
-```
+1. **Pela Interface Gráfica**: Abra o seu Menu de Aplicativos, vá na categoria **Administração** e clique no ícone do **SysBlock-Inspector**. Ele abrirá de forma moderna a tela de autenticação gráfica oficial do sistema (`pkexec`) pedindo a sua senha.
+2. **Pelo Terminal**: Caso prefira invocar manualmente via linha de comando, basta digitar:
+   ```bash
+   sysblock-inspector
+   ```
 
-### 2. Gerar o Binário Único Portátil (Standalone)
+### Como Compilar (Para Desenvolvedores do GitHub)
 
-Compila todo o projeto em um arquivo executável único em formato binário ELF nativo do Linux, embutindo o interpretador, o ícone PNG e a interface:
+O repositório disponibiliza scripts automatizados em Bash que fazem a limpeza de caches locais, invocam o PyInstaller e geram os pacotes comerciais finais **direto dentro da pasta `dist/`**, sem a necessidade de ferramentas complexas de terceiros.
 
-```bash
-./build.sh
-```
-
-### 3. Gerar Instalador Nativo para Linux Mint / Ubuntu (.deb)
-
-Gera o pacote `.deb` oficial de instalação comercial com o lançador gráfico configurado com a logo oficial para a categoria "Administração":
-
-```bash
-./create_deb.sh
-```
-
-### 4. Gerar Instalador Nativo para Fedora / RedHat (.rpm)
-
-Gera o pacote `.rpm` oficial de instalação para o ecossistema do Fedora Workstation utilizando as diretivas nativas do `rpmbuild`:
-
-```bash
-./create_rpm.sh
-```
+1. **Dar permissão aos scripts de automação (Apenas na primeira vez)**:
+   ```bash
+   chmod +x *.sh
+   ```
+2. **Gerar o Binário Único Portátil (Standalone)**:
+   ```bash
+   ./build.sh
+   ```
+3. **Gerar Instalador Nativo para Linux Mint / Ubuntu (.deb)**:
+   ```bash
+   ./create_deb.sh
+   ```
+4. **Gerar Instalador Nativo para Fedora / RedHat (.rpm)**:
+   ```bash
+   ./create_rpm.sh
+   ```
 
 ---
 
