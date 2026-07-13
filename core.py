@@ -279,18 +279,6 @@ def get_cpu_static_hardware_specs():
                 specs["session_type"] = f"{session_out.upper()} Session"
         except Exception:
             specs["session_type"] = "X11 (Clássico / Servidor de Janelas)"
-        
-        # --- RAIO-X DIRETO DO CONFIG TEXT DE GTK-3 ---
-        gtk3_path = os.path.join(user_home, ".config", "gtk-3.0", "settings.ini")
-        if os.path.exists(gtk3_path):
-            try:
-                with open(gtk3_path, "r") as f:
-                    for line in f:
-                        if "gtk-theme-name" in line:
-                            specs["gtk_theme"] = line.split("=")[-1].replace("'", "").replace('"', '').strip()
-                        if "gtk-icon-theme-name" in line:
-                            specs["gtk_icons"] = line.split("=")[-1].replace("'", "").replace('"', '').strip()
-            except Exception: pass
             
     except Exception: pass
 
@@ -444,10 +432,15 @@ def detect_and_read_storage_devices(has_smartctl, has_nvme):
     topologies with filesystem formats and exact utilization fractions.
     Integrates raw silicon NVMe chip controllers natively from the unified lspci framework.
     """
+    import os
+    import subprocess
+    import json
+    import re
+    
     # PROG: Pre-fetches the unified PCI bus map descriptors array natively
     pci_map = parse_lspci_hardware_bus()
-
     devices_report = {}
+    
     try:
         block_root = "/sys/block"
         if not os.path.exists(block_root): return {}
@@ -459,7 +452,6 @@ def detect_and_read_storage_devices(has_smartctl, has_nvme):
             cmd_lsblk = "lsblk -J -b -o NAME,FSTYPE,MOUNTPOINT,SIZE,FSAVAIL,FSUSE%"
             lsblk_out = subprocess.check_output(cmd_lsblk, shell=True, text=True, stderr=subprocess.DEVNULL)
             
-            import json
             data = json.loads(lsblk_out)
             if "blockdevices" in data:
                 for bdev in data["blockdevices"]:
@@ -505,6 +497,7 @@ def detect_and_read_storage_devices(has_smartctl, has_nvme):
                             if "children" in child:
                                 extracted.extend(crawl_children(child["children"]))
                         return extracted
+                        
                     if "children" in bdev:
                         partitions_map[b_name] = crawl_children(bdev["children"])
         except Exception: pass
@@ -516,7 +509,7 @@ def detect_and_read_storage_devices(has_smartctl, has_nvme):
                 if "nvme" in dev and "n" in dev and any(char.isdigit() for char in dev.split("n")[-1]):
                     if "p" in dev.split("n")[-1]: continue
                 if "mmcblk" in dev and "p" in dev: continue
-
+                
                 # Determine media factor architecture profiles
                 drive_type = "SSD NVMe (Flash)"
                 if dev.startswith("mmcblk"):
@@ -531,15 +524,15 @@ def detect_and_read_storage_devices(has_smartctl, has_nvme):
                         if os.path.exists(rotational_path):
                             with open(rotational_path, "r") as rf:
                                 drive_type = "Disco Rígido (HD)" if rf.read().strip() == "1" else "SSD SATA (Flash)"
-                    if not drive_type: drive_type = "Dispositivo SATA"
-
+                if not drive_type: drive_type = "Dispositivo SATA"
+                
                 # Initialize storage profile structures
                 devices_report[dev] = {
                     "type": drive_type, "brand_model": "Modelo Genérico", "serial": "N/A", "temp": "N/A",
                     "health_label": "Desgaste de Células:" if "nvme" in dev else "Setores Realocados:",
                     "health_value": "Saudável (OK)", "total_space": "N/A", "partitions": []
                 }
-
+                
                 # 2. READ RAW FACTORY SECTORS CAPACITY
                 total_hardware_sectors = 0
                 try:
@@ -547,23 +540,20 @@ def detect_and_read_storage_devices(has_smartctl, has_nvme):
                     if os.path.exists(size_path):
                         with open(size_path, "r") as sf:
                             total_hardware_sectors = int(sf.read().strip())
-                            bytes_total = total_hardware_sectors * 512
-                            devices_report[dev]["total_space"] = f"{(bytes_total / 1024 / 1024 / 1024):.1f} GB"
+                        bytes_total = total_hardware_sectors * 512
+                        devices_report[dev]["total_space"] = f"{(bytes_total / 1024 / 1024 / 1024):.1f} GB"
                 except Exception: pass
-
+                
                 # 3. METADATA AND SMART ATTAINMENTS PIPELINES
                 if "nvme" in dev:
                     try:
                         mp = f"/sys/block/{dev}/device/model"
                         base_model = open(mp, "r").read().strip() if os.path.exists(mp) else "SSD NVMe"
                         
-                        # PROG: MANEIRA 100% BLINDADA! Extrai com precisão cirúrgica o número do barramento na string
                         try:
-                            # Safely strips and isolates the integer token right after 'nvme' (e.g. nvme2n1 -> 2)
                             clean_dev_str = dev.replace("nvme", "").split("n")[0].strip()
                             nvme_pci_idx = int(clean_dev_str) if clean_dev_str.isdigit() else 0
                             
-                            # Cross-references the slot index with our single lspci layout buffer
                             if nvme_pci_idx in pci_map["nvme_controllers"]:
                                 silicon_chip = pci_map["nvme_controllers"][nvme_pci_idx]
                                 devices_report[dev]["brand_model"] = f"{base_model} [{silicon_chip}]"
@@ -571,14 +561,16 @@ def detect_and_read_storage_devices(has_smartctl, has_nvme):
                                 devices_report[dev]["brand_model"] = base_model
                         except Exception:
                             devices_report[dev]["brand_model"] = base_model
-
+                    except Exception: pass
+                    
+                    try:
                         sp = f"/sys/block/{dev}/device/serial"
                         if os.path.exists(sp): devices_report[dev]["serial"] = open(sp, "r").read().strip().upper()
                     except Exception: pass
-
+                    
                     if has_nvme:
                         try:
-                            clean_node = dev.split("p") if "p" in dev else dev
+                            clean_node = dev.split("p")[0] if "p" in dev else dev
                             cmd = f"sudo nvme smart-log /dev/{clean_node}"
                             out = subprocess.check_output(cmd, shell=True, text=True, stderr=subprocess.DEVNULL)
                             for line in out.split("\n"):
@@ -588,6 +580,7 @@ def detect_and_read_storage_devices(has_smartctl, has_nvme):
                                 if "temperature" in line:
                                     devices_report[dev]["temp"] = line.split(":")[-1].replace("Celsius", "°C").strip()
                         except Exception: pass
+                        
                     if devices_report[dev]["health_value"] == "Saudável (OK)":
                         devices_report[dev]["health_value"] = "0% / 100%"
                 elif dev.startswith("mmcblk"):
@@ -598,19 +591,35 @@ def detect_and_read_storage_devices(has_smartctl, has_nvme):
                         model_p = f"/sys/block/{dev}/device/model"
                         if os.path.exists(model_p): devices_report[dev]["brand_model"] = open(model_p, "r").read().strip()
                     except Exception: pass
+                    
                     raw_sectors_count = "0"
                     if has_smartctl:
                         try:
                             cmd_sata = f"sudo smartctl -i -A /dev/{dev}"
                             sata_out = subprocess.check_output(cmd_sata, shell=True, text=True, stderr=subprocess.DEVNULL)
                             for line in sata_out.split("\n"):
-                                if "Serial Number:" in line: devices_report[dev]["serial"] = line.split(":")[-1].strip().upper()
-                                if "Reallocated_Sector_Ct" in line: raw_sectors_count = line.split()[-1].strip()
+                                if "Serial Number:" in line: 
+                                    devices_report[dev]["serial"] = line.split(":")[-1].strip().upper()
+                                    
+                                if "Reallocated_Sector_Ct" in line: 
+                                    # REGEX FIX: Garante o isolamento cirúrgico do RAW_VALUE real de setores no SATA
+                                    match_raw = re.search(r'(\d+)\s*$', line.strip())
+                                    if match_raw:
+                                        raw_sectors_count = match_raw.group(1).strip()
+                                    else:
+                                        raw_sectors_count = line.split()[-1].strip()
+                                        
                                 if "Temperature_Celsius" in line or "Airflow_Temperature_Cel" in line:
-                                    devices_report[dev]["temp"] = f"{line.split()[-4].strip()} °C"
+                                    # REGEX FIX: Isola a temperatura limpando o texto dos limites de parênteses
+                                    match_temp = re.search(r'(\d+)\s*(?:\(.*\))?$', line.strip())
+                                    if match_temp:
+                                        devices_report[dev]["temp"] = f"{match_temp.group(1)} °C"
+                                    else:
+                                        devices_report[dev]["temp"] = f"{line.split()[-4].strip()} °C"
                         except Exception: pass
+                        
                     devices_report[dev]["health_value"] = f"{raw_sectors_count} / {total_hardware_sectors if total_hardware_sectors > 0 else 'X'}"
-
+                    
                 # 4. FETCH INTEGRATED DYNAMIC PARTITIONS LIST FROM THE LSBLK IN-MEMORY BUFFER TREE
                 if dev in partitions_map and partitions_map[dev]:
                     devices_report[dev]["partitions"] = partitions_map[dev]
@@ -619,58 +628,10 @@ def detect_and_read_storage_devices(has_smartctl, has_nvme):
                         "part_node": f"/dev/{dev}", "format": "RAW / NÃO FORMATADO", "mount": "Não montado",
                         "size": devices_report[dev]["total_space"], "used": "0.0 GB", "free": devices_report[dev]["total_space"], "percent": "0% (Vazio)"
                     }]
-
-
+                    
         return devices_report
-    except Exception: return {}
-
-def check_system_dark_preference():
-    """UNIVERSAL LINUX (TEXT CONFIG COMPATIBILITY): Reads direct user configuration files."""
-    try:
-        real_user = os.environ.get("SUDO_USER")
-        if not real_user or real_user == "root":
-            import pwd
-            real_user = pwd.getpwuid(os.getuid())
-        user_home = f"/home/{real_user}"
-        if real_user == "root": user_home = "/root"
-
-        cinnamon_config = os.path.join(user_home, ".cinnamon", "spices", "theme@cinnamon.org", "theme.json")
-        if os.path.exists(cinnamon_config):
-            with open(cinnamon_config, "r") as f:
-                content = f.read().lower()
-                if "dark" in content: return True
-                if "light" in content or "mint-y" in content: return False
-
-        gtk3_config = os.path.join(user_home, ".config", "gtk-3.0", "settings.ini")
-        if os.path.exists(gtk3_config):
-            with open(gtk3_config, "r") as f:
-                for line in f:
-                    if "gtk-theme-name" in line:
-                        if "dark" in line.lower(): return True
-                        break
-
-        gtk4_config = os.path.join(user_home, ".config", "gtk-4.0", "settings.ini")
-        if os.path.exists(gtk4_config):
-            with open(gtk4_config, "r") as f:
-                for line in f:
-                    if "gtk-theme-name" in line:
-                        if "dark" in line.lower(): return True
-                        break
-
-        kdeglobals_config = os.path.join(user_home, ".config", "kdeglobals")
-        if os.path.exists(kdeglobals_config):
-            with open(kdeglobals_config, "r") as f:
-                for line in f:
-                    if "colorScheme" in line or "ColorScheme" in line:
-                        if "dark" in line.lower(): return True
-                        break
-
-        user_exec_prefix = f"sudo -u {real_user} "
-        cmd_mint = f"{user_exec_prefix}gsettings get org.cinnamon.desktop.interface gtk-theme"
-        out_mint = subprocess.check_output(cmd_mint, shell=True, text=True, stderr=subprocess.DEVNULL)
-        if "dark" in out_mint.lower(): return True
-        return False
-    except Exception: return True
+    except Exception: 
+        return {}
 
 def get_gpu_hardware_telemetry():
     """

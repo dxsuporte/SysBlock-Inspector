@@ -6,22 +6,22 @@ class CpuTab(BaseTab):
     """
     PROGRAMMER: High-performance dynamic CPU monitor tab component.
     Combines CPU-Z hardware profile maps with active Task Manager performance threads.
-    Fully expanded with a responsive vertical Canvas scrollbar with recursive mouse bindings.
+    Runs purely raw using native operating system styling context.
     """
     def __init__(self, parent, font_registry):
         super().__init__(parent, font_registry)
         
         # PROG: Instantiates array pointer cache to manipulate per-core widgets without flickering
         self.dynamic_core_labels = []
-
+        
         # 1. PROG: CONSTRUCT SCROLLABLE CANVAS ENGINE INFRASTRUCTURE FOR CPU TAB
-        self.canvas = tk.Canvas(self, bd=0, highlightthickness=0, bg="#1a1a1a")
+        self.canvas = tk.Canvas(self, bd=0, highlightthickness=0)
         self.scrollbar = tk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
         
         # Bind structural frame to catch dynamic child boxes packing profiles
-        self.scroll_content_frame = tk.Frame(self.canvas, bg="#1a1a1a")
+        self.scroll_content_frame = tk.Frame(self.canvas)
         
-        # Configure automatic internal bounding dimensions matrix calculations (Anchor NW locks content to TOP)
+        # Configure automatic internal bounding dimensions matrix calculations
         self.scroll_content_id = self.canvas.create_window((0, 0), window=self.scroll_content_frame, anchor="nw")
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
         
@@ -36,40 +36,40 @@ class CpuTab(BaseTab):
         self.bind("<MouseWheel>", self._on_mousewheel)
         self.bind("<Button-4>", self._on_mousewheel) 
         self.bind("<Button-5>", self._on_mousewheel) 
-
+        
         # --- BLOCK 1: SPECIFICATIONS (CPU-Z MODEL) ---
-        group_cpuz = self.create_group_box(" ESPECIFICAÇÕES DO HARDWARE DYNAMIC ", target_parent=self.scroll_content_frame)
+        group_cpuz = self.create_group_box(" ESPECIFICAÇÕES DO HARDWARE ")
         
         static_specs = core.get_cpu_static_hardware_specs()
         gov_specs = core.get_cpu_governor_info()
         
-        self.append_grid_row(group_cpuz, "Modelo do Processador Detectado:", "model_name", text_color="#ffffff")
-        self.append_grid_row(group_cpuz, "Quantidade Total de Threads:", "threads_count", text_color="#ffffff")
-        self.append_grid_row(group_cpuz, "Configuração de Cache L1 | L2 | L3 Mapeado:", "caches_config", text_color="#ffffff")
-        self.append_grid_row(group_cpuz, "Limites do Clock por Hardware (Mín | Máx):", "clock_limits", text_color="#ffffff")
-        self.append_grid_row(group_cpuz, "Perfil Energético Ativo (Governador Kernel):", "governor_profile", text_color="#ffffff")
+        self.append_grid_row(group_cpuz, "Modelo do Processador Detectado:", "model_name")
+        self.append_grid_row(group_cpuz, "Quantidade Total de Threads:", "threads_count")
+        self.append_grid_row(group_cpuz, "Configuração de Cache L1 | L2 | L3 Mapeado:", "caches_config")
+        self.append_grid_row(group_cpuz, "Limites do Clock por Hardware (Mín | Máx):", "clock_limits")
+        self.append_grid_row(group_cpuz, "Perfil Energético Ativo (Governador Kernel):", "governor_profile")
         self.append_grid_row(group_cpuz, "Virtualização de Hardware (VT-x / AMD-V):", "vt_state")
-        self.append_grid_row(group_cpuz, "Instruções de Extensão Suportadas:", "instruction_flags", text_color="#9cdcfe")
-        self.append_grid_row(group_cpuz, "Mitigações de Vulnerabilidade de Silício:", "security_mitigations", text_color="#ffffff")
-
+        self.append_grid_row(group_cpuz, "Instruções de Extensão Suportadas:", "instruction_flags")
+        self.append_grid_row(group_cpuz, "Mitigações de Vulnerabilidade de Silício:", "security_mitigations")
+        
         # Populate static non-updating architectural fields straight away on initialization
         self.fields["model_name"].config(text=static_specs["model"])
         self.fields["threads_count"].config(text=static_specs["cores"])
-        self.fields["caches_config"].config(text=f"{static_specs['cache_l1']}  |  {static_specs['cache_l2']}  |  {static_specs['cache_l3']}")
-        self.fields["clock_limits"].config(text=f"{gov_specs['min_clock']}  e  {gov_specs['max_clock']}")
+        self.fields["caches_config"].config(text=f"{static_specs['cache_l1']} | {static_specs['cache_l2']} | {static_specs['cache_l3']}")
+        self.fields["clock_limits"].config(text=f"{gov_specs['min_clock']} e {gov_specs['max_clock']}")
         self.fields["governor_profile"].config(text=gov_specs["governor"])
         self.fields["instruction_flags"].config(text=core.get_cpu_instructions_flags())
         self.fields["security_mitigations"].config(text=static_specs["mitigations"])
-
+        
         # Native conditional coloring logic execution for hardware virtualization validation
         if "vt_state" in self.fields:
             if "Habilitado" in static_specs["vt_x"]:
-                self.fields["vt_state"].config(text=static_specs["vt_x"], fg="#4cbd5a")
+                self.fields["vt_state"].config(text=static_specs["vt_x"], fg="#2e7d32")
             else:
                 self.fields["vt_state"].config(text=static_specs["vt_x"], fg="#ff3333")
-
+                
         # --- BLOCK 2: GERENCIADOR DE TAREFAS (PERFORMANCE LIVES) ---
-        self.group_taskman = self.create_group_box(" DESEMPENHO EM TEMPO REAL ", border_color="#9cdcfe", target_parent=self.scroll_content_frame)
+        self.group_taskman = self.create_group_box(" DESEMPENHO EM TEMPO REAL ")
         
         self.append_grid_row(self.group_taskman, "Capacidade de Uso Geral da CPU:", "cpu_usage_pct")
         self.append_grid_row(self.group_taskman, "Temperatura de Operação do Silício:", "cpu_temp_val")
@@ -77,7 +77,7 @@ class CpuTab(BaseTab):
         self.append_grid_row(self.group_taskman, "Interrupções de Hardware por segundo:", "cpu_interrupts")
         self.append_grid_row(self.group_taskman, "Tempo de Atividade do Sistema (Uptime):", "sys_uptime")
         self.append_grid_row(self.group_taskman, "Forks de Processos e Tarefas do Kernel:", "cpu_tasks_metrics")
-
+        
         # Force recursive mouse wheel bindings propagation across all newly instantiated elements
         self._bind_mousewheel_recursively(self.scroll_content_frame)
 
@@ -92,8 +92,10 @@ class CpuTab(BaseTab):
             canvas_height = self.canvas.winfo_height()
             content_height = self.scroll_content_frame.winfo_height()
             if content_height > canvas_height:
-                if event.num == 4 or event.delta > 0: self.canvas.yview_scroll(-1, "units")
-                elif event.num == 5 or event.delta < 0: self.canvas.yview_scroll(1, "units")
+                if event.num == 4 or event.delta > 0: 
+                    self.canvas.yview_scroll(-1, "units")
+                elif event.num == 5 or event.delta < 0: 
+                    self.canvas.yview_scroll(1, "units")
 
     def _bind_mousewheel_recursively(self, widget):
         """PROG: Dynamic walker to bind mouse wheel events to child elements overlays."""
@@ -102,26 +104,6 @@ class CpuTab(BaseTab):
         widget.bind("<Button-5>", self._on_mousewheel)
         for child in widget.winfo_children():
             self._bind_mousewheel_recursively(child)
-
-    def apply_theme_colors(self, colors):
-        """Overrides color appliers to wipe dynamic background canvas leaks profiles securely."""
-        super().apply_theme_colors(colors)
-        if hasattr(self, 'canvas') and self.canvas.winfo_exists():
-            self.canvas.config(bg=colors["bg_root"])
-            self.scroll_content_frame.config(bg=colors["bg_root"])
-            self.scrollbar.config(bg=colors["bg_root"])
-
-    def create_group_box(self, title_text, border_color="#555555", target_parent=None):
-        """Helper redirection routing targets to support scrollable content frames injection profiles."""
-        parent_node = target_parent if target_parent else self
-        box = tk.LabelFrame(parent_node, text=title_text, font=self.fonts["section"], bg="#2d2d2d", fg="#ffffff", bd=1, relief="solid")
-        box.pack(fill="x", padx=15, pady=(5, 10), ipady=5)
-        if hasattr(self, 'card_frames'):
-            self.card_frames.append(box)
-        else:
-            if not hasattr(self, '_local_card_frames_cache'): self._local_card_frames_cache = []
-            self._local_card_frames_cache.append(box)
-        return box
 
     def update_telemetry(self):
         """Executes targeted runtime updating streams every single iteration cycle loop."""
@@ -139,18 +121,18 @@ class CpuTab(BaseTab):
             if idx < len(self.dynamic_core_labels):
                 self.dynamic_core_labels[idx].config(text=row_text)
             else:
-                f_row = tk.Frame(self.group_taskman, bg="#2d2d2d")
+                f_row = tk.Frame(self.group_taskman)
                 f_row.pack(fill="x", padx=15, pady=2)
                 
-                lbl_t = tk.Label(f_row, text=f"Clocks da CPU (Linha {idx+1}):", font=self.fonts["label"], bg="#2d2d2d", fg="#aaaaaa")
+                lbl_t = tk.Label(f_row, text=f"Clocks da CPU (Linha {idx+1}):", font=self.fonts["label"])
                 lbl_t.pack(side="left", anchor="w")
                 
-                lbl_v = tk.Label(f_row, text=row_text, font=self.fonts["monospace"], bg="#2d2d2d", fg="#9cdcfe")
+                lbl_v = tk.Label(f_row, text=row_text, font=self.fonts["monospace"])
                 lbl_v.pack(side="right", anchor="e")
                 
                 self._bind_mousewheel_recursively(f_row)
                 self.dynamic_core_labels.append(lbl_v)
-
+                
         # PROG: REAL-TIME RESPONSIBILITY MATRIX CALIBRATOR ENGINE (CPU LAYER)
         if hasattr(self, 'canvas') and self.canvas.winfo_exists():
             self.canvas.update_idletasks()

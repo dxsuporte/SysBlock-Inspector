@@ -2,7 +2,7 @@
 
 [**Read this in Portuguese (Clique aqui para ler em Português)**](#-versão-em-português)
 
-**SysBlock-Inspector** is a modern, lightweight, and hardware-focused standalone system diagnostic utility for Linux desktops (fully optimized for Linux Mint, Ubuntu, and Fedora). It bridges the gap between CLI utilities like `neofetch` and deep hardware monitors like `CPU-Z` or `HWMonitor`, rendering low-level silicon telemetry inside a clean, enterprise-grade dark/light Tkinter graphical interface.
+**SysBlock-Inspector** is a modern, lightweight, and hardware-focused standalone system diagnostic utility for Linux desktops (fully optimized for Linux Mint, Ubuntu, and Fedora). It bridges the gap between CLI utilities like `neofetch` and deep hardware monitors like `CPU-Z` or `HWMonitor`, rendering low-level silicon telemetry inside a clean, enterprise-grade native graphical interface that automatically inherits the operating system's active desktop theme styles.
 
 This project was built with portability in mind, designed to run directly from field support USB drives without requiring external Python dependencies on the target customer machine.
 
@@ -17,8 +17,8 @@ The system performs a silent scan across hardware buses and Kernel paging files 
 - **🔌 Motherboard & BIOS**: Direct crawling of electrical PCI links to map Chipsets models and Integrated Audio Codecs.
 - **▤ Memory RAM**: Scans physical board traces to count occupied layout slots, maximum chip capacity limits, and commercial JEDEC factory signatures (e.g., Crucial, Micron).
 - **🖥 Graphics (GPU)**: Hardware-level silicon chip name extraction (e.g., Intel UHD Graphics 630) resolving missing vendor string split errors.
-- **🌐 Network Interface**: High-efficiency live bandwidth traffic counters tracking true physical layer silicon chips models (e.g., Intel I219-V Ethernet and Wi-Fi 6E AX210) instead of raw logical device labels.
-- **💾 Storage Audit**: Unified JSON-based block device tree mapping. Displays health degradation slices via `smartctl`/`nvme-cli` alongside raw physical NVMe controller models (Silicon Motion, Realtek, ADATA).
+- **🌐 Network Interface**: High-efficiency live bandwidth traffic counters tracking true physical layer silicon chips models (e.g., Intel I219-V Ethernet and Wi-Fi 6E AX210) instead of raw logical device labels, featuring isolated background loop fault-tolerance protections.
+- **💾 Storage Audit**: Unified JSON-based block device tree mapping powered by high-precision Regular Expressions (Regex) scanners. Displays real-time health degradation slices via `smartctl`/`nvme-cli` with bulletproof hardware status evaluation.
 
 ---
 
@@ -48,30 +48,38 @@ Once installed via `.deb` or `.rpm`, the application integrates natively into Li
 
 1. **Via Graphical Interface**: Open your Applications Menu, navigate to the **Administration** category, and click on **SysBlock-Inspector**. It will securely trigger the native system authentication prompt (`pkexec`) asking for your password.
 2. **Via Terminal**:
-   ```bash
-   sysblock-inspector
-   ```
+
+```bash
+sysblock-inspector
+```
 
 ### How to Compile (For GitHub Developers)
 
 The repository provides automated Bash scripts that handle administrative cache cleanups, invoke PyInstaller, and output the final production-ready packages **directly inside the `dist/` directory**:
 
 1. **Grant execution permissions to automation scripts (First time only)**:
-   ```bash
-   chmod +x *.sh
-   ```
+
+```bash
+chmod +x *.sh
+```
+
 2. **Build Standard Portable Binary (Standalone)**:
-   ```bash
-   ./build.sh
-   ```
+
+```bash
+./build.sh
+```
+
 3. **Generate Native Debian/Mint Package (.deb)**:
-   ```bash
-   ./create_deb.sh
-   ```
+
+```bash
+./create_deb.sh
+```
+
 4. **Generate Native Fedora Package (.rpm)**:
-   ```bash
-   ./create_rpm.sh
-   ```
+
+```bash
+./create_rpm.sh
+```
 
 ---
 
@@ -104,37 +112,40 @@ Feel free to open _Issues_, submit _Pull Requests_, or perform _Forks_!
 
 ## 🇧🇷 Versão em Português
 
-**SysBlock-Inspector** é um utilitário de diagnóstico e monitoramento de hardware de nível industrial e código aberto para ecossistemas Linux. Ele renderiza telemetria de baixo nível de hardware em uma interface gráfica Tkinter minimalista, rápida e responsiva.
+**SysBlock-Inspector** é um utilitário de diagnóstico e monitoramento de hardware de nível industrial e código aberto para ecossistemas Linux (totalmente otimizado para Linux Mint, Ubuntu e Fedora). Ele renderiza telemetria de baixo nível de hardware em uma interface gráfica Tkinter minimalista, rápida, responsiva e integrada, que herda de forma nativa e automática os estilos do tema ativo do sistema operacional do usuário.
 
 O projeto foi projetado com foco em **portabilidade absoluta**, permitindo gerar um executável binário único capaz de rodar diretamente de pendrives de assistência técnica de campo, sem exigir dependências no cliente.
 
+---
+
 ### 💎 Funcionalidades e Módulos do Sistema
 
-- **💻 Sistema / Neofetch**: Informações do OS, uptime, idioma local e ambiente gráfico (DE, WM, Temas) com suporte ao **Servidor Gráfico Ativo (X11 ou Wayland)**.
-- **❖ Processador (CPU)**: Identificação do modelo, núcleos reais e frequências independentes (Clocks) por thread atualizados ao vivo.
+- **💻 Sistema / Neofetch**: Informações do OS, uptime, idioma local e ambiente de desktop (DE, WM) com suporte ao **Servidor Gráfico Ativo (X11 ou Wayland)** bypassando os filtros de isolamento do Polkit.
+- **❖ Processador (CPU)**: Identificação do modelo, núcleos reais e frequências independentes (Clocks) por thread atualizados ao vivo a cada 2 segundos.
 - **🔌 Placa-Mãe**: Dados de DMI/BIOS, barramentos elétricos PCI, Chipset da placa e controladores de Áudio Integrados.
-- **▤ Memória RAM**: Varredura de slots físicos ocupados/vazios, capacidade máxima e assinaturas comerciais JEDEC (ex: Crucial, Micron).
-- **🖥 Placa de Vídeo (GPU)**: Identificação cirúrgica do chip gráfico ativo (ex: Intel UHD Graphics 630).
-- **🌐 Tráfego de Rede**: Contadores de download/upload vivos atrelados estritamente ao silício físico dos chips (ex: Intel I219-V e Wi-Fi 6E AX210).
-- **💾 Armazenamento / Discos**: Mapeamento JSON de blocos de discos. Auditoria de saúde (SMART) para HDs e SSDs NVMe com fabricante do controlador de silício.
+- **▤ Memória RAM**: Varredura de slots físicos ocupados/vazios, capacidade máxima e assinaturas comerciais JEDEC (ex: Crucial, Micron) direto das tabelas SMBIOS.
+- **🖥 Placa de Vídeo (GPU)**: Identificação cirúrgica do chip gráfico ativo (ex: Intel UHD Graphics 630) resolvendo falhas de segmentação de strings.
+- **🌐 Tráfego de Rede**: Contadores de download/upload vivos atrelados estritamente ao silício físico dos chips (ex: Intel I219-V e Wi-Fi 6E AX210), contando com tolerância a falhas em loops de segundo plano.
+- **💾 Armazenamento / Discos**: Mapeamento unificado de blocos de discos alimentado por escaners de alta precisão via Expressões Regulares (Regex). Auditoria de integridade em tempo real (SMART) para HDs e SSDs NVMe com validação de status de hardware blindada contra falsos positivos.
+
+---
 
 ### 🛠️ Especificações Técnicas e Requisitos
 
 - **Intenção Original**: Otimizado para a interface **Cinnamon** do **Linux Mint 22.x**.
 - **Compatibilidade Ampliada**: Engenharia pensada para rodar universalmente no **Fedora (.rpm)**, Ubuntu, Arch Linux e derivados de 64 bits.
 - **Kernel Recomendado**: Linux Kernel **5.15 ou superior** (séries de Kernel 6.x recomendadas).
-- **Dependências de Disco e Barramento**: Usa `smartmontools`, `nvme-cli` e `pciutils` (com tratamento nativo caso estejam ausentes).
+- **Dependências de Disco e Barramento**: Usa `smartmontools`, `nvme-cli` e `pciutils` (com tratamento nativo e gracioso caso estejam ausentes).
+
+---
 
 ### 🚀 Como Executar, Compilar e Empacotar
 
 - **Execução**: Chame pelo menu de **Administração** (via `pkexec` gráfico) ou abra pelo terminal digitando `sysblock-inspector`.
-- **Compilação**: Dê permissão com `chmod +x *.sh` e execute `./build.sh` para o binário, `./create_deb.sh` para o instalador Mint/Ubuntu ou `./create_rpm.sh` para o instalador do Fedora. Todos os arquivos finais saem organizados dentro da pasta `dist/`.
+- **Compilação**: Dê permissão com `chmod +x *.sh` e execute `./build.sh` para o binário portátil, `./create_deb.sh` para o instalador Mint/Ubuntu ou `./create_rpm.sh` para o instalador do Fedora. Todos os arquivos finais saem organizados dentro da pasta `dist/`.
+
+---
 
 ### 🧑‍💻 Créditos de Desenvolvimento e Co-Autoria IA
 
-- **Idealização e Validação**: **Danilo Xavier** – diretor e fundador da **DXSuporte** (Marca Registrada), aplicando experiência prática de campo em assistência técnica.
-- **Engenharia de Código**: Desenvolvido em parceria com um modelo de **Inteligência Artificial de Linguagem Avançada da Google**, atuando como co-autor de software sênior.
-
-### 🤝 Propósito do Projeto e Contribuição (Licença Aberta)
-
-Ferramenta aberta disponibilizada publicamente para que **qualquer pessoa interessada possa usar, modificar, estudar e contribuir para a melhoria contínua do sistema**, estendendo o suporte e impedindo a obsolescência tecnológica.
+- **Idealização, Arquitetura e Validação**: **Danilo Xavier** – diretor e fundador da **DXSuporte** (Marca Registrada), aplicando experiência prática de campo em auditoria de sistemas, suporte e implantação de hardware.
